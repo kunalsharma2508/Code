@@ -1,0 +1,88 @@
+
+#include<bits/stdc++.h>
+using namespace std;
+
+vector<vector<vector<pair<int , int>>>> floyd(vector<vector<int>> &nums){
+    int n = nums.size();
+    vector<vector<pair<int , int>>> temp(n , vector<pair<int , int>>(n , {0 , 0}));
+    vector<vector<vector<pair<int , int>>>>temp1;
+
+    for(int i=0;i<=n-1;i++){
+        for(int j=0;j<=n-1;j++){
+            temp[i][j].first =nums[i][j];
+            if(i==j){
+                temp[i][j].second=INT_MIN; 
+            }
+            else{
+                temp[i][j].second =j; 
+            }
+        }
+    }
+
+    for(int k=0;k<=n-1;k++){ 
+        for(int i=0;i<=n-1;i++){
+            for(int j=0;j<=n-1;j++){
+                if(temp[i][k].first + temp[k][j].first < temp[i][j].first){ 
+                    temp[i][j].second=temp[i][k].second; 
+                    temp[i][j].first=temp[i][k].first+temp[k][j].first; 
+                }
+            }
+        }
+       temp1.push_back(temp);
+    }
+
+    return temp1;
+}
+
+void shortest_path(vector<vector<vector<pair<int , int>>>> &temp1 , int i , int j , int k){
+    vector<int>Path;
+	int start=i;
+	while(temp1[k][start][j].second!=INT_MIN){
+		Path.push_back(start);
+		start=temp1[k][start][j].second;	
+	}
+	Path.push_back(j);
+
+    for(auto t : Path){
+        cout << t;
+        if(t != j)cout << " ";
+    }
+    cout << endl;
+}
+
+int main(){
+    ifstream fin("graph.txt");
+    int n;
+    fin >> n;
+    vector<vector<int>> nums(n , vector<int>(n));
+    for(int i = 0 ; i <=n-1 ; i++){
+        for(int j = 0 ; j <= n-1 ; j++){
+            fin >> nums[i][j];
+        }
+    }
+
+    vector<vector<vector<pair<int , int>>>>temp1 = floyd(nums);
+    
+    for(int k = 0 ; k <=temp1.size()-1 ; k++){
+        for(int i = 0 ; i <=temp1[k].size()-1 ; i++){
+            for(int j = 0 ; j <=temp1[k][i].size()-1 ; j++){
+                cout <<temp1[k][i][j].first << " ";
+            }
+            cout << endl;
+        }
+        cout << endl;
+    }
+
+    
+    string S;
+    while(getline(fin , S)){
+        stringstream str(S);
+        int i , j , k;
+        str >> i >> j >> k;
+        if(i == 0 && j == 0 && k == 0)
+        continue;
+       shortest_path(temp1 , i , j , k);
+    }
+    return 0;
+}
+
