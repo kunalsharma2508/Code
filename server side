@@ -1,0 +1,49 @@
+import socket
+import threading
+
+clients = {}
+def personify(connection_socket , client_address , clients):
+    while True:
+        name = connection_socket.recv(1024).decode()
+        print(f"{name} has joined the chat. Address: {client_address}")
+        for client_name, client_sock in clients.items():
+                if client_name != name:
+                    client_sock.send(f"{name} has joined the chat!".encode('utf-8'))
+
+        clients[name] = connection_socket
+
+        while True:
+            try:
+                message = connection_socket.recv(1024).decode()
+            except:
+                break
+            if message == "exit":
+                break
+            print(f"{name} > {message}")
+
+            # Broadcast the message to all clients
+            for client_name, client_sock in clients.items():
+                if client_name != name:
+                    client_sock.send(f"\n{name} > {message}".encode('utf-8'))
+
+        # Remove the client from the dictionary when they disconnect
+        del clients[name]
+        print(f"{name} has left the chat.")
+        connection_socket.close()
+
+# Create a socket for listening to new connections
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+host = '10.196.41.166'
+port = 6666
+server_socket.bind((host, port))
+print("Server started...waiting for a connection from the client")
+
+
+server_socket.listen(5000)
+
+while True:
+    client_socket, addr = server_socket.accept()
+
+    # Start a new thread for each client
+    client_handler = threading.Thread(target=personify, args=(client_socket, addr, clients))
+    client_handler.start()    
