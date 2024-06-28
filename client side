@@ -1,0 +1,36 @@
+import socket
+import threading
+
+def waiting_for_message(s):
+    while True:
+        try:
+            message = s.recv(1024).decode()
+        except:
+            break
+        print(message)
+
+# Create a socket
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# Connect to the server
+host = '10.196.41.166'
+port = 6666
+s.connect((host, port))
+
+# Send the client's name to the server
+name = input("Enter your name: ")
+s.send(name.encode('utf-8'))
+
+# Start a thread to receive messages from the server
+wait_thread = threading.Thread(target=waiting_for_message, args=(s , ))
+wait_thread.start()
+
+# Main thread for sending messages
+while True:
+    message = input()
+    s.send(message.encode('utf-8'))
+    if message == "exit":
+        break
+
+# Close the connection
+s.close()
